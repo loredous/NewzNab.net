@@ -109,7 +109,7 @@
                 case Functions.REGISTER:
                     break;
                 case Functions.SEARCH:
-                    QueryURI.Query = HttpUtility.HtmlEncode(string.Format("t=search&o=xml&apikey={0}&q={1}&group={2}&cat={3}&offset={4}", this.APIKey, Query.Query, string.Join(",", Query.Groups.Select(x => x.ToString()).ToArray()), string.Join(",", Query.Categories.Select(x => x.ToString()).ToArray()),Query.Offset.ToString()));
+                    QueryURI.Query = BuildGenericQueryString(Query);
                     break;
                 case Functions.TV_SEARCH:
                     break;
@@ -143,10 +143,36 @@
             return XMLResponse;
         }
 
+        private string BuildGenericQueryString(NewzNabQuery Query)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append("t=search");
+            if (APIKey != "") { result.Append("&apikey=" + APIKey); }
+            if (Query.Query != "") { result.Append("&q=" + Query.Query); }
+            if (Query.Offset != null) { result.Append("&offset=" + Query.Offset.ToString()); }
+            if (Query.Groups.Count > 0)
+            {
+                result.Append("&group=");
+                result.Append(string.Join(",", Query.Groups));
+            }
+            if (Query.Categories.Count > 0)
+            {
+                result.Append("&cat=");
+                result.Append(string.Join(",", Query.Categories));
+            }
+            return result.ToString();
+        }
+
         public List<NewzNabSearchResult> Search(NewzNabQuery Query)
         {
-            string[] ordinals = new string[] { "a", "b", "c" };
-            var taken = ordinals.ta
+            List<NewzNabSearchResult> Results = new List<NewzNabSearchResult>();
+            XmlDocument Result = DoQuery(Query);
+            XmlNodeList Items = Result.SelectNodes("/rss/channel/item");
+            foreach (XmlNode Item in Items)
+            {
+                Results.Add(NewzNabSearchResult.ParseItemBlock(Item));
+            }
+            return Results;
         }
     }
 

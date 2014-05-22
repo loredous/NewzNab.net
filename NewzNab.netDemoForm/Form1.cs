@@ -13,6 +13,7 @@ namespace NewzNab.netDemoForm
     public partial class Form1 : Form
     {
         NewzNabSource FormSource;
+        BindingSource Src;
 
         public Form1()
         {
@@ -51,7 +52,6 @@ namespace NewzNab.netDemoForm
                 {
                     btnSearch.Enabled = false;
                     cmbSearchType.Enabled = false;
-                    lstSearchResults.Items.Add("Searching is disabled!");
                 }
                 if (FormSource.Capabilities.TVSearchAvail) { cmbSearchType.Items.Add("TV Search"); }
                 if (FormSource.Capabilities.MovieSearchAvail) { cmbSearchType.Items.Add("Movie Search"); }
@@ -73,7 +73,77 @@ namespace NewzNab.netDemoForm
             }
             foreach (UsenetGroup Group in clsGroups.CheckedItems)
             {
-                Query.Groups.Add(Group.ID);
+                Query.Groups.Add(Group.Name);
+            }
+            switch (cmbSearchType.SelectedItem.ToString())
+            {
+                case "General":
+                    Query.RequestedFunction = Functions.SEARCH;
+                    break;
+                case "TV Search":
+                    Query.RequestedFunction = Functions.TV_SEARCH;
+                    break;
+                case "Movie Search":
+                    Query.RequestedFunction = Functions.MOVIE_SEARCH;
+                    break;
+                case "Audio Search":
+                    Query.RequestedFunction = Functions.MUSIC_SEARCH;
+                    break;
+            }
+            
+            Src = new BindingSource(new BindingList<NewzNabSearchResult>(FormSource.Search(Query)), null);
+            dataGridView1.DataSource = Src;
+
+            lblResultCount.Text = Src.Count.ToString();
+
+
+            
+            
+        }
+
+        private void PrepareDataGridView()
+        {
+            dataGridView1.AutoGenerateColumns = false;
+
+            DataGridViewColumn column = new DataGridViewTextBoxColumn();
+            column.DataPropertyName = "Title";
+            column.Name = "Title";
+            column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            column.SortMode = DataGridViewColumnSortMode.Programmatic;
+            dataGridView1.Columns.Add(column);
+
+            column = new DataGridViewTextBoxColumn();
+            column.DataPropertyName = "Category";
+            column.Name = "Category";
+            column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            column.SortMode = DataGridViewColumnSortMode.Programmatic;
+            dataGridView1.Columns.Add(column);
+
+            //column = new DataGridViewTextBoxColumn();
+            //column.DataPropertyName = "Description";
+            //column.Name = "Description";
+            //column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            //dataGridView1.Columns.Add(column);
+
+            column = new DataGridViewTextBoxColumn();
+            column.DataPropertyName = "PublishDate";
+            column.Name = "Publish Date";
+            column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            column.SortMode = DataGridViewColumnSortMode.Programmatic;
+            dataGridView1.Columns.Add(column);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            PrepareDataGridView();
+        }
+
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.Value != null)
+            {
+                DataGridViewCell Cell = this.dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                Cell.ToolTipText = ((NewzNabSearchResult)(dataGridView1.Rows[e.RowIndex].DataBoundItem)).Description;
             }
         }
     }

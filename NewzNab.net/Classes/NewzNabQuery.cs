@@ -10,9 +10,8 @@
     public class NewzNabQuery
     {
         public Functions RequestedFunction;
-        public SearchTypes SearchType;
         public string Query;
-        public List<int> Groups = new List<int>();
+        public List<string> Groups = new List<string>();
         public List<int> Categories = new List<int>();
         public int Offset;
     }
@@ -36,12 +35,4 @@
         USER
     }
 
-    public enum SearchTypes
-    {
-        General,
-        Music,
-        TV,
-        Movie,
-        Audio
-    }
 }
